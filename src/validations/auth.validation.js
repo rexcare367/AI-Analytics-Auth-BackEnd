@@ -9,10 +9,25 @@ const register = {
   }),
 };
 
+const registerWithGoogle = {
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+    name: Joi.string().required(),
+    isEmailVerified: Joi.boolean().required(),
+  }),
+};
+
 const login = {
   body: Joi.object().keys({
     email: Joi.string().required(),
     password: Joi.string().required(),
+  }),
+};
+
+const loginWithGoogle = {
+  body: Joi.object().keys({
+    email: Joi.string().required(),
   }),
 };
 
@@ -55,7 +70,9 @@ const verifyEmail = {
 
 module.exports = {
   register,
+  registerWithGoogle,
   login,
+  loginWithGoogle,
   logout,
   myAccount,
   refreshTokens,

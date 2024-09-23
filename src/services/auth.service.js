@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const tokenService = require('./token.service');
 const userService = require('./user.service');
+const emailService = require('./email.service');
 const Token = require('../models/token.model');
 const ApiError = require('../utils/ApiError');
 const { tokenTypes } = require('../config/tokens');
@@ -15,6 +16,24 @@ const loginUserWithEmailAndPassword = async (email, password) => {
   const user = await userService.getUserByEmail(email);
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+  }
+  if (!user.isEmailVerified) {
+    const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
+    await emailService.sendVerificationEmail(email, verifyEmailToken);
+    throw new ApiError(httpStatus.UNAVAILABLE_FOR_LEGAL_REASONS, 'Please verify your Email');
+  }
+  return user;
+};
+
+/**
+ * Login with username and password
+ * @param {string} email
+ * @returns {Promise<User>}
+ */
+const loginUserWithEmail = async (email) => {
+  const user = await userService.getUserByEmail(email);
+  if (!user) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email');
   }
   return user;
 };
@@ -81,17 +100,18 @@ const verifyEmail = async (verifyEmailToken) => {
     const verifyEmailTokenDoc = await tokenService.verifyToken(verifyEmailToken, tokenTypes.VERIFY_EMAIL);
     const user = await userService.getUserById(verifyEmailTokenDoc.user);
     if (!user) {
-      throw new Error();
+      return false;
     }
-    await Token.deleteMany({ user: user.id, type: tokenTypes.VERIFY_EMAIL });
     await userService.updateUserById(user.id, { isEmailVerified: true });
+    return true;
   } catch (error) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'Email verification failed');
+    return false;
   }
 };
 
 module.exports = {
   loginUserWithEmailAndPassword,
+  loginUserWithEmail,
   logout,
   refreshAuth,
   resetPassword,

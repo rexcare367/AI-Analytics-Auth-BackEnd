@@ -1,8 +1,16 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
+const config = require('../config/config');
 
 const register = catchAsync(async (req, res) => {
+  const user = await userService.createUser(req.body);
+  const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
+  await emailService.sendVerificationEmail(req.body.email, verifyEmailToken);
+  res.status(httpStatus.CREATED).send({ user });
+});
+
+const registerWithGoogle = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
   const tokens = await tokenService.generateAuthTokens(user);
   res.status(httpStatus.CREATED).send({ user, tokens });
@@ -11,6 +19,13 @@ const register = catchAsync(async (req, res) => {
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const user = await authService.loginUserWithEmailAndPassword(email, password);
+  const tokens = await tokenService.generateAuthTokens(user);
+  res.send({ user, tokens });
+});
+
+const loginWithGoogle = catchAsync(async (req, res) => {
+  const { email } = req.body;
+  const user = await authService.loginUserWithEmail(email);
   const tokens = await tokenService.generateAuthTokens(user);
   res.send({ user, tokens });
 });
@@ -48,13 +63,16 @@ const sendVerificationEmail = catchAsync(async (req, res) => {
 });
 
 const verifyEmail = catchAsync(async (req, res) => {
-  await authService.verifyEmail(req.query.token);
-  res.status(httpStatus.NO_CONTENT).send();
+  const isVerified = await authService.verifyEmail(req.query.token);
+  if (isVerified) res.redirect(`${config.client.url}/auth/verifySuccess`);
+  else res.redirect(`${config.client.url}/auth/verifyFail`);
 });
 
 module.exports = {
   register,
+  registerWithGoogle,
   login,
+  loginWithGoogle,
   logout,
   myAccount,
   refreshTokens,

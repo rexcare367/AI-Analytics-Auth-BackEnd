@@ -10,6 +10,7 @@ const envVarsSchema = Joi.object()
     PORT: Joi.number().default(3000),
     MONGODB_URL: Joi.string().required().description('Mongo DB url'),
     CLIENT_URL: Joi.string().required().description('Mongo DB url'),
+    AUTH_BACKEND_URL: Joi.string().required().description('Mongo DB url'),
     JWT_SECRET: Joi.string().required().description('JWT secret key'),
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
     JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
@@ -29,6 +30,10 @@ const envVarsSchema = Joi.object()
     STRIPE_PK: Joi.string().description('the from field in the emails sent by the app'),
     STRIPE_SK: Joi.string().description('the from field in the emails sent by the app'),
     STRIPE_WEBHOOK_SECRET: Joi.string().description('the from field in the emails sent by the app'),
+
+    GOOGLE_CLIENT_ID: Joi.string().description('the from field in the emails sent by the app'),
+    GOOGLE_CLIENT_SECRET: Joi.string().description('the from field in the emails sent by the app'),
+    GOOGLE_REDIRECT_URL: Joi.string().description('the from field in the emails sent by the app'),
   })
   .unknown();
 
@@ -51,6 +56,14 @@ module.exports = {
   },
   client: {
     url: envVars.CLIENT_URL,
+  },
+  backend: {
+    auth: envVars.AUTH_BACKEND_URL,
+  },
+  google: {
+    CLIENT_ID: envVars.GOOGLE_CLIENT_ID,
+    CLIENT_SECRET: envVars.GOOGLE_CLIENT_SECRET,
+    REDIRECT_URL: envVars.GOOGLE_REDIRECT_URL,
   },
   jwt: {
     secret: envVars.JWT_SECRET,
