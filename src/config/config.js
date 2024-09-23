@@ -26,7 +26,6 @@ const envVarsSchema = Joi.object()
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
     ADMIN_EMAIL: Joi.string().description('the from field in the emails sent by the app'),
 
-    GOAPI_KEY: Joi.string().description('the from field in the emails sent by the app'),
     STRIPE_PK: Joi.string().description('the from field in the emails sent by the app'),
     STRIPE_SK: Joi.string().description('the from field in the emails sent by the app'),
     STRIPE_WEBHOOK_SECRET: Joi.string().description('the from field in the emails sent by the app'),
@@ -72,7 +71,6 @@ module.exports = {
     from: envVars.EMAIL_FROM,
     admin: envVars.ADMIN_EMAIL,
   },
-  goapi_key: envVars.GOAPI_KEY,
   stipe: {
     pk: envVars.STRIPE_PK,
     sk: envVars.STRIPE_SK,
